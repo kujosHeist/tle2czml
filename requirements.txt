@@ -1,0 +1,6 @@
+ephem==3.7.6.0
+pygeoif==0.7
+python-dateutil==2.6.1
+pytz==2017.3
+sgp4==1.4
+six==1.11.0
