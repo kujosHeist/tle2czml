@@ -6,6 +6,22 @@ import ephem, os, math, pytz, datetime
 from ephem import degrees
 from sgp4.io import twoline2rv
 from sgp4.earth_gravity import wgs72
+import sys, getopt
+
+HELP_TEXT = """
+
+Usage:
+  python tle2czml.py [options] -i <input_file> -o <output_file>
+
+Arguments
+  inputfile                   Text file containing list of two line elements
+  outputfile                  Name of .czml file to output results 
+
+General Options:
+  -h, --help                  Show help.
+  -n                          Input TLE file does not contain satellite names
+
+"""		
 
 
 BILLBOARD_SCALE = 1.5
@@ -300,15 +316,15 @@ def get_earliest_epoch(sats):
 			earliest = sat
 	return earliest.tle_epoch
 
-def main():
+def create_czml(inputfile, outputfile):
 	rgbs = Colors()
-	satellite_array = read_tles('tle.txt', rgbs)
+	satellite_array = read_tles(inputfile, rgbs)
 	
 	sim_start_time = get_earliest_epoch(satellite_array)
 	sim_end_time = get_latest_epoch(satellite_array)
 
 	doc = create_czml_file(sim_start_time, sim_end_time)
-	file_name = 'test.czml'
+	file_name = outputfile
 
 	for sat in satellite_array:
 		sat_name = sat.sat_name
@@ -328,5 +344,36 @@ def main():
 
 	doc.write(file_name)
 
-if __name__ == '__main__':
-	main()
+
+def main(argv):
+	inputfile = ''
+	outputfile = ''
+	try:
+		opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+	except getopt.GetoptError:
+		print('python czml2tle.py [options] -i <inputfile> [-o <outputfile>]')
+		sys.exit(2)
+	for opt, arg in opts:
+		if opt == '-h':
+			print(HELP_TEXT)
+			sys.exit()
+		elif opt in ("-i"):
+			inputfile = arg
+		elif opt in ("-o"):
+			outputfile = arg
+
+	if len(inputfile) == 0:
+		print("")
+		print("Error: No input tle file selected")
+		print('python czml2tle.py [options] -i <inputfile> [-o <outputfile>]')
+		print("")
+		sys.exit()
+		
+	if len(outputfile) > 0:
+		create_czml(inputfile, outputfile)
+	else:
+		create_czml(inputfile, "out.czml")
+
+if __name__ == "__main__":
+   main(sys.argv[1:])	
+
