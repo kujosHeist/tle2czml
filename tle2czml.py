@@ -1,12 +1,14 @@
 # this module contains classes and scripts for generating the .czml files used to visualize the satellites orbits
 
-from czml import CZML, CZMLPacket, Description, Billboard, Label, Path, Position
+
+#import czml
 from dateutil import parser
 import ephem, os, math, pytz, datetime
 from ephem import degrees
 from sgp4.io import twoline2rv
 from sgp4.earth_gravity import wgs72
 import sys, getopt
+
 
 HELP_TEXT = """
 
