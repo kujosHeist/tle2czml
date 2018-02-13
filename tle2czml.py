@@ -1,6 +1,6 @@
 # this module contains classes and scripts for generating the .czml files used to visualize the satellites orbits
 
-from czml_update import czml
+from czml import CZML, CZMLPacket, Description, Billboard, Label, Path, Position
 from dateutil import parser
 import ephem, os, math, pytz, datetime
 from ephem import degrees
@@ -104,8 +104,8 @@ class OverPass:
 # create CZML doc with default document packet
 def create_czml_file(sim_start_time, sim_end_time):
 	interval = getInterval(sim_start_time, sim_end_time)
-	doc = czml.CZML()
-	packet1 = czml.CZMLPacket(id='document', version='1.0')
+	doc = CZML()
+	packet1 = CZMLPacket(id='document', version='1.0')
 	packet1.clock = {"interval":interval,"currentTime":sim_start_time.isoformat(),"multiplier":MULTIPLIER,"range":"LOOP_STOP","step":"SYSTEM_CLOCK_MULTIPLIER"}
 	doc.packets.append(packet1)
 	
@@ -115,9 +115,9 @@ def create_czml_file(sim_start_time, sim_end_time):
 def create_satellite_packet(satId, tle, orbitTimeInMinutes, simStartTime, simEndTime, rgba):
 	availability = getInterval(simStartTime, simEndTime)
 
-	packet = czml.CZMLPacket(id='Satellite/' + satId)
+	packet = CZMLPacket(id='Satellite/' + satId)
 	packet.availability = availability
-	packet.description = czml.Description(DESCRIPTION_TEMPLATE + ' ' + satId)
+	packet.description = Description(DESCRIPTION_TEMPLATE + ' ' + satId)
 	packet.billboard = create_bill_board()
 	packet.label = create_label(satId, rgba)
 	packet.path = create_path(availability, orbitTimeInMinutes, rgba)
@@ -126,12 +126,12 @@ def create_satellite_packet(satId, tle, orbitTimeInMinutes, simStartTime, simEnd
 
 
 def create_bill_board():
-	bb = czml.Billboard(scale=BILLBOARD_SCALE, show=True)
+	bb = Billboard(scale=BILLBOARD_SCALE, show=True)
 	bb.image = SATELITE_IMAGE_URI
 	return bb
 
 def create_label(satId, rgba):
-	lab = czml.Label(text=satId, show=True)
+	lab = Label(text=satId, show=True)
 	
 	lab.fillColor = {"rgba":rgba}
 	lab.font = LABEL_FONT
@@ -145,7 +145,7 @@ def create_label(satId, rgba):
 	
 	
 def create_path(totalPathInterval, orbitTimeInMinutes, rgba):
-	p = czml.Path()
+	p = Path()
 	p.show = [{"interval":totalPathInterval, "boolean":True}]
 
 	p.width = 1
@@ -225,7 +225,7 @@ def create_path(totalPathInterval, orbitTimeInMinutes, rgba):
 
 
 def create_position(start_time, end_time, tle):
-	pos = czml.Position()
+	pos = Position()
 	pos.interpolationAlgorithm = "LAGRANGE"
 	pos.interpolationDegree = 5
 	pos.referenceFrame = "INERTIAL"

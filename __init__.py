@@ -1,1 +1,2 @@
-from .main import create_czml
+from .czml import CZML
+from .tle2czml import create_czml
