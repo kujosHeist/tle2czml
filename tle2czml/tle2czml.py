@@ -1,7 +1,14 @@
 # this module contains classes and scripts for generating the .czml files used to visualize the satellites orbits
 
+from .czml import CZML
+from .czml import CZMLPacket
+from .czml import Description
+from .czml import Billboard
+from .czml import Label
+from .czml import Path
+from .czml import Position
 
-#import czml
+import pkg_resources
 from dateutil import parser
 import ephem, os, math, pytz, datetime
 from ephem import degrees
@@ -54,7 +61,10 @@ class Satellite:
 		
 class Colors:
 	def __init__(self):
-		colors_file = open('rgba_list.txt', 'r')
+
+		path = 'rgba_list.txt'
+		filepath = pkg_resources.resource_filename(__name__, path)
+		colors_file = open(filepath, 'r')
 	
 		rgbs = []
 	
