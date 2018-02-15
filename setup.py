@@ -15,7 +15,7 @@ setup(name='tle2czml',
 		'sgp4==1.4',
 		'six==1.11.0',
 		'wheel==0.24.0',      	
-      ],      
+      ],
       include_package_data=True,
       zip_safe=False)
 

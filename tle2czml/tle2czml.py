@@ -263,9 +263,6 @@ def get_satellite_orbit(raw_tle, sim_start_time, sim_end_time, czml_file_name):
 	doc.packets.append(sat_packet)
 	doc.write(czml_file_name)		
 
-		
-#############################################################################
-# running module from command line
 
 def read_tles(tle_file_name, rgbs):
 	tle_src = open(tle_file_name, 'r')
@@ -300,15 +297,14 @@ def get_earliest_epoch(sats):
 			earliest = sat
 	return earliest.tle_epoch
 
-def create_czml(inputfile, outputfile):
+def create_czml(inputfile_path, outputfile_path=None):
 	rgbs = Colors()
-	satellite_array = read_tles(inputfile, rgbs)
+	satellite_array = read_tles(inputfile_path, rgbs)
 	
 	sim_start_time = get_earliest_epoch(satellite_array)
 	sim_end_time = get_latest_epoch(satellite_array)
 
 	doc = create_czml_file(sim_start_time, sim_end_time)
-	file_name = outputfile
 
 	for sat in satellite_array:
 		sat_name = sat.sat_name
@@ -326,38 +322,6 @@ def create_czml(inputfile, outputfile):
 
 		doc.packets.append(sat_packet)
 
-	doc.write(file_name)
-
-
-def main(argv):
-	inputfile = ''
-	outputfile = ''
-	try:
-		opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
-	except getopt.GetoptError:
-		print('python czml2tle.py [options] -i <inputfile> [-o <outputfile>]')
-		sys.exit(2)
-	for opt, arg in opts:
-		if opt == '-h':
-			print(HELP_TEXT)
-			sys.exit()
-		elif opt in ("-i"):
-			inputfile = arg
-		elif opt in ("-o"):
-			outputfile = arg
-
-	if len(inputfile) == 0:
-		print("")
-		print("Error: No input tle file selected")
-		print('python czml2tle.py [options] -i <inputfile> [-o <outputfile>]')
-		print("")
-		sys.exit()
-		
-	if len(outputfile) > 0:
-		create_czml(inputfile, outputfile)
-	else:
-		create_czml(inputfile, "out.czml")
-
-if __name__ == "__main__":
-   main(sys.argv[1:])	
-
+	if not outputfile_path:
+		outputfile_path = "out.czml"
+	doc.write(outputfile_path)
