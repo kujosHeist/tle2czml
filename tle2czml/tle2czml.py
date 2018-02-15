@@ -8,13 +8,11 @@ from .czml import Label
 from .czml import Path
 from .czml import Position
 
-import pkg_resources
 from dateutil import parser
-import ephem, os, math, pytz, datetime
-from ephem import degrees
+import math, datetime, sys, getopt, pkg_resources
+
 from sgp4.io import twoline2rv
 from sgp4.earth_gravity import wgs72
-import sys, getopt
 
 
 HELP_TEXT = """
@@ -84,33 +82,7 @@ class Colors:
 			self.index = 0
 			
 		return next_color
-
-class OverPass:
-	def __init__(self, info, sat, observer):
-		self.rise_time = parser.parse(str(info[0])).replace(tzinfo=pytz.UTC)
-		self.rise_azimuth = degrees(info[1])
-		self.max_altitude_time = parser.parse(str(info[2])).replace(tzinfo=pytz.UTC)
-		self.max_altitude = degrees(info[3])
-		self.set_time = parser.parse(str(info[4])).replace(tzinfo=pytz.UTC)
-		self.set_azimuth = degrees(info[5])
-		self.duration = int((info[4] - info[0]) *60*60*24)
-
-		self.observer = observer
-		self.sat = sat
-		self.sun = ephem.Sun()
-		self.visible = self.check_visibility()
-
-
-
-	def check_visibility(self):
-		self.observer.date = self.max_altitude_time
-		self.sun.compute(self.observer)
-		self.sat.compute(self.observer)
-
-		if degrees('-30:00:00') < degrees(self.sun.alt) < degrees('-6:00:00') and self.max_altitude:
-			return True
-		else:
-			return False		
+	
 		
 		
 # create CZML doc with default document packet
