@@ -1,5 +1,7 @@
 # tle2czml
 
+![alt text](screenshot.png)
+
 Python package which takes a file of Two Line Element's (TLE's) and returns a czml file visualising their orbits.
 
 ## Requirements
@@ -39,7 +41,6 @@ tle2czml.create_czml("tle.txt")
 # You can also specify the time range you would like to visualise the orbits
 start_time = datetime(2018, 2, 1, 17, 30)
 end_time = datetime(2018, 2, 1, 19, 30)
-
 tle2czml.create_czml(input_file, start_time=start_time, end_time=end_time)
 
 # You can specify a different output path
