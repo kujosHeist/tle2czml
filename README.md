@@ -66,4 +66,4 @@ You can find up to date TLE's for most satellites on `https://www.celestrak.com/
 * Add command line script
 * Allow users to login with space-track.org
 * Add ability to select base64 image to use for satellite
-* Add ability to generate html file with cesium globle showing czml file
+* Add ability to generate html file with cesium globle displaying czml file
