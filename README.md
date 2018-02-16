@@ -1,13 +1,13 @@
 # tle2czml
 
-![alt text](screenshot.png)
-
 Python package which takes a file of Two Line Element's (TLE's) and returns a czml file visualising their orbits.
 
+![alt text](screenshot.png)
+
 ## Requirements
-* Python3
-* Pip
-* File containing list of two line elements, example: 
+* python3
+* pip
+* Text file containing list of two line elements, example: 
 
 ```
 ISS (ZARYA)             
@@ -26,7 +26,6 @@ FLOCK 2E'-3
 1 41480U 98067JA  18046.62549195  .00058065  00000-0  22549-3 0  9996
 2 41480  51.6222 201.3651 0000797 288.7159  71.3758 15.86570970100255
 ```
-
 
 ## Install
 `pip install tle2czml`
