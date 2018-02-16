@@ -1,8 +1,12 @@
 # tle2czml
 
+
 Python package which takes a file of Two Line Element's (TLE's) and returns a czml file visualising their orbits.  
+
+## Background  
 CZML is a JSON format for describing a time-dynamic graphical scene, primarily for display in a web browser running <a href="https://cesiumjs.org/">Cesium</a>.  
-A <a href="https://www.celestrak.com/NORAD/documentation/tle-fmt.asp">TLE</a> is a data format encoding a list of orbital elements of an Earth-orbiting object for a given point in time.   
+A <a href="https://www.celestrak.com/NORAD/documentation/tle-fmt.asp">TLE</a> is a data format encoding a list of orbital elements of an Earth-orbiting object for a given point in time.  
+
 This package uses <a href="https://pypi.python.org/pypi/sgp4/">sgp4.py</a> to predict the satellites fututure postion, and a slightly modified <a href="https://github.com/cleder/czml">czml.py</a> to create the .czml files.  
 
 ![alt text](screenshot.png)
@@ -54,3 +58,10 @@ To view the orbits, go to `https://cesiumjs.org/Cesium/Build/Apps/CesiumViewer/`
 (Click the "Play" button in the bottom left corner to start the visualisation)  
 
 You can find up to date TLE's for most satellites on `https://www.celestrak.com/NORAD/elements/`  
+
+## To Do
+* Add command line script
+* Allow users to login with space-track.org
+* Add tests
+* Add ability to select base64 image to use for satellite
+* Add ability to generate html file with cesium globle showing czml file
