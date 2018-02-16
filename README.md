@@ -1,7 +1,7 @@
 # tle2czml
 
 
-Python package which takes a file of Two Line Element's (TLE's) and returns a czml file visualising their orbits.  
+Python package which takes in Two Line Element's (TLE's) and returns a czml file visualising their orbits.  
 
 ## Background  
 CZML is a JSON format for describing a time-dynamic graphical scene, primarily for display in a web browser running <a href="https://cesiumjs.org/">Cesium</a>.  
