@@ -8,27 +8,12 @@ from .czml import Label
 from .czml import Path
 from .czml import Position
 
+from datetime import datetime, timedelta
 from dateutil import parser
-import math, datetime, sys, getopt, pkg_resources
+import math, sys, getopt, pkg_resources, pytz
 
 from sgp4.io import twoline2rv
 from sgp4.earth_gravity import wgs72
-
-
-HELP_TEXT = """
-
-Usage:
-  python tle2czml.py [options] -i <input_file> -o <output_file>
-
-Arguments
-  inputfile                   Text file containing list of two line elements
-  outputfile                  Name of .czml file to output results 
-
-General Options:
-  -h, --help                  Show help.
-  -n                          Input TLE file does not contain satellite names
-
-"""		
 
 
 BILLBOARD_SCALE = 1.5
@@ -40,7 +25,7 @@ DESCRIPTION_TEMPLATE = 'Orbit of Satellite: '
 MINUTES_IN_DAY = 1440
 TIME_STEP = 300
 
-DEFAULT_RGBA = [213, 255, 0, 255]
+DEFAUlead_times_RGBA = [213, 255, 0, 255]
 DEBUGGING = False
 
 class Satellite:
@@ -51,10 +36,11 @@ class Satellite:
 		self.tle_object = tle_object  # sgp4Object
 		self.rgba = rgba
 		self.sat_name = raw_tle[0].rstrip()	
-		self.orbital_time_in_minutes = (24.0/float(self.raw_tle[2][52:63]))*60.0
+		# extracts the number of orbits per day from the tle and calcualtes the time per orbit
+		self.orbital_time_in_minutes = (24.0/float(self.raw_tle[2][52:63]))*60.0 
 		self.tle_epoch = tle_object.epoch
 		
-	def getSatelliteName(self):
+	def get_satellite_name(self):
 		return self.satName
 		
 class Colors:
@@ -82,30 +68,30 @@ class Colors:
 			self.index = 0
 			
 		return next_color
-	
 		
 		
 # create CZML doc with default document packet
-def create_czml_file(sim_start_time, sim_end_time):
-	interval = getInterval(sim_start_time, sim_end_time)
+def create_czml_file(start_time, end_time):
+	interval = get_interval(start_time, end_time)
 	doc = CZML()
-	packet1 = CZMLPacket(id='document', version='1.0')
-	packet1.clock = {"interval":interval,"currentTime":sim_start_time.isoformat(),"multiplier":MULTIPLIER,"range":"LOOP_STOP","step":"SYSTEM_CLOCK_MULTIPLIER"}
-	doc.packets.append(packet1)
-	
+	packet = CZMLPacket(id='document', version='1.0')
+	print(interval)
+	print(start_time.isoformat())			
+
+	packet.clock = {"interval": interval, "currentTime": start_time.isoformat(), "multiplier": MULTIPLIER, "range": "LOOP_STOP", "step": MULTIPLIER}
+	doc.packets.append(packet)
 	return doc
 	
 
-def create_satellite_packet(satId, tle, orbitTimeInMinutes, simStartTime, simEndTime, rgba):
-	availability = getInterval(simStartTime, simEndTime)
-
-	packet = CZMLPacket(id='Satellite/' + satId)
+def create_satellite_packet(sat_id, tle, orbit_time_in_minutes, sim_start_time, sim_end_time, rgba):
+	availability = get_interval(sim_start_time, sim_end_time)
+	packet = CZMLPacket(id='Satellite/{}'.format(sat_id))
 	packet.availability = availability
-	packet.description = Description(DESCRIPTION_TEMPLATE + ' ' + satId)
+	packet.description = Description("{} {}".format(DESCRIPTION_TEMPLATE, sat_id))
 	packet.billboard = create_bill_board()
-	packet.label = create_label(satId, rgba)
-	packet.path = create_path(availability, orbitTimeInMinutes, rgba)
-	packet.position = create_position(simStartTime, simEndTime, tle)  # have seperate arg for epoch incase for when you to start propagating from a time other than the tle epoch
+	packet.label = create_label(sat_id, rgba)
+	packet.path = create_path(availability, orbit_time_in_minutes, rgba)
+	packet.position = create_position(sim_start_time, sim_end_time, tle)  
 	return packet	
 
 
@@ -114,96 +100,94 @@ def create_bill_board():
 	bb.image = SATELITE_IMAGE_URI
 	return bb
 
-def create_label(satId, rgba):
-	lab = Label(text=satId, show=True)
-	
-	lab.fillColor = {"rgba":rgba}
+def create_label(sat_id, rgba):
+	lab = Label(text=sat_id, show=True)
+	lab.fillColor = {"rgba": rgba}
 	lab.font = LABEL_FONT
 	lab.horizontalOrigin = "LEFT"
-	lab.outlineColor = {"rgba":[0,0,0,255]}
+	lab.outlineColor = {"rgba": [0,0,0,255]}
 	lab.outlineWidth = 2	 
-	lab.pixelOffset = {"cartesian2":[12,0]} 
+	lab.pixelOffset = {"cartesian2": [12,0]} 
 	lab.style = 'FILL_AND_OUTLINE'
 	lab.verticalOrigin = 'CENTER'
 	return lab
 	
 	
-def create_path(totalPathInterval, orbitTimeInMinutes, rgba):
+def create_path(total_path_interval, orbit_time_in_minutes, rgba):
 	p = Path()
-	p.show = [{"interval":totalPathInterval, "boolean":True}]
-
+	
+	p.show = [{"interval": total_path_interval, "boolean": True}]
 	p.width = 1
-	p.material = {"solidColor":{"color":{"rgba":rgba}}}
+	p.material = {"solidColor": {"color": {"rgba": rgba}}}
 	p.resolution = 120
 
-	startEpochStr = totalPathInterval.split("/")[0]
-	endEpochStr = totalPathInterval.split("/")[1]
+	start_epoch_str = total_path_interval.split("/")[0]
+	end_epoch_str = total_path_interval.split("/")[1]
 	
-	leftOverMinutes = MINUTES_IN_DAY % orbitTimeInMinutes 
-	numberOfFullOrbits = math.floor(MINUTES_IN_DAY/orbitTimeInMinutes)
+	left_over_minutes = MINUTES_IN_DAY % orbit_time_in_minutes 
+	number_of_full_orbits = math.floor(MINUTES_IN_DAY/orbit_time_in_minutes)
 	
-	
-	subPathIntervalStart = parser.parse(startEpochStr)
-	subPathIntervalEnd = subPathIntervalStart + datetime.timedelta(minutes = leftOverMinutes)    # first interval roughly half an orbit, rest of the path intervals are full orbits
-	
-	subPathIntervalStr = subPathIntervalStart.isoformat() + '/' + subPathIntervalEnd.isoformat()
-	orbitalTimeInSeconds = (orbitTimeInMinutes * 60.0)
+	sub_path_interval_start = parser.parse(start_epoch_str)
+	# first interval roughly half an orbit, rest of the path intervals are full orbits
+	sub_path_interval_end = sub_path_interval_start + timedelta(minutes=left_over_minutes)    
+	sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()
+
+	orbital_time_in_seconds = (orbit_time_in_minutes * 60.0)
 	
 	if DEBUGGING:
-		print('Total Path Interval: ' + totalPathInterval)   # goes from tle epoch to 12/24 hours in future
+		print('Total Path Interval: ' + total_path_interval)   # goes from tle epoch to 12/24 hours in future
 	
-	LT = []
+	lead_times = []
 	
-	endEpoch = parser.parse(endEpochStr)
+	end_epoch = parser.parse(end_epoch_str)
 	
-	for i in range(0, numberOfFullOrbits + 1):
-		LT.append({
-				  "interval":subPathIntervalStr,
-				  "epoch":subPathIntervalStart.isoformat(),
-				  "number":[
-					0,orbitalTimeInSeconds,
-					orbitalTimeInSeconds,0
+	for i in range(0, number_of_full_orbits + 1):
+		lead_times.append({
+				  "interval": sub_path_interval_str,
+				  "epoch": sub_path_interval_start.isoformat(),
+				  "number": [
+					0, orbital_time_in_seconds,
+					orbital_time_in_seconds, 0
 				  ]
 				})
 			
 		if DEBUGGING:
-			print('Sub interval string: ' + subPathIntervalStr)
+			print('Sub interval string: ' + sub_path_interval_str)
 			
-		subPathIntervalStart = subPathIntervalEnd
-		subPathIntervalEnd = subPathIntervalStart + datetime.timedelta(minutes = orbitTimeInMinutes)
-		
-		subPathIntervalStr = subPathIntervalStart.isoformat() + '/' + subPathIntervalEnd.isoformat()
+		sub_path_interval_start = sub_path_interval_end
+		sub_path_interval_end = sub_path_interval_start + timedelta(minutes=orbit_time_in_minutes)
+		sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()
 	
 	if DEBUGGING:
 		print()
 	
-	subPathIntervalStart = parser.parse(startEpochStr)
-	subPathIntervalEnd = subPathIntervalStart + datetime.timedelta(minutes = leftOverMinutes)   # first interval roughly half an orbit, rest of the path intervals are full orbits
+	sub_path_interval_start = parser.parse(start_epoch_str)
+	# first interval roughly half an orbit, rest of the path intervals are full orbits
+	sub_path_interval_end = sub_path_interval_start + timedelta(minutes = left_over_minutes)  
+	sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()	
 	
-	subPathIntervalStr = subPathIntervalStart.isoformat() + '/' + subPathIntervalEnd.isoformat()	
+	trail_times = []
 	
-	TT = []
-	
-	for i in range(0,numberOfFullOrbits + 1):
-		TT.append({
-				  "interval":subPathIntervalStr,
-				  "epoch":subPathIntervalStart.isoformat(),
+	for i in range(0, number_of_full_orbits + 1):
+		trail_times.append({
+				  "interval": sub_path_interval_str,
+				  "epoch": sub_path_interval_start.isoformat(),
 				  "number":[
-					0,0,
-					orbitalTimeInSeconds,orbitalTimeInSeconds
+					0, 0,
+					orbital_time_in_seconds, orbital_time_in_seconds
 				  ]
 				})	
 
 		if DEBUGGING:
-			print('Sub interval string: ' + subPathIntervalStr)			
+			print('Sub interval string: ' + sub_path_interval_str)			
 
-		subPathIntervalStart = subPathIntervalEnd
-		subPathIntervalEnd = subPathIntervalStart + datetime.timedelta(minutes = orbitTimeInMinutes)
+		sub_path_interval_start = sub_path_interval_end
+		sub_path_interval_end = sub_path_interval_start + timedelta(minutes=orbit_time_in_minutes)
 		
-		subPathIntervalStr = subPathIntervalStart.isoformat() + '/' + subPathIntervalEnd.isoformat()	
+		sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()	
 
-	p.leadTime = LT
-	p.trailTime = TT	
+	p.leadTime = lead_times
+	p.trailTime = trail_times	
 	
 	return p
 
@@ -216,31 +200,29 @@ def create_position(start_time, end_time, tle):
 	pos.epoch = start_time.isoformat()
 	
 	diff = end_time - start_time
-	numberOfPositions = int(diff.total_seconds()/300)   
-	numberOfPositions +=5;  # so that there's more than one position
-
-	pos.cartesian = get_future_sat_positions(tle, numberOfPositions, start_time)
-
+	number_of_positions = int(diff.total_seconds()/300)   
+	# so that there's more than one position
+	number_of_positions += 5;  
+	pos.cartesian = get_future_sat_positions(tle, number_of_positions, start_time)
 	return pos	
 
 
-def getInterval(currentTime, endTime):
-	return currentTime.isoformat() + "/" + endTime.isoformat()
+def get_interval(current_time, end_time):
+	return current_time.isoformat() + "/" + end_time.isoformat()
 	
-def get_future_sat_positions(satTle, numberOfPositions, startTime):
-
-	timeStep = 0
+def get_future_sat_positions(satTle, number_of_positions, start_time):
+	time_step = 0
 	output = []
-	epoch = startTime
-	for i in range(0, numberOfPositions):
-		currentTime = startTime + datetime.timedelta(seconds=timeStep)
-		eciPosition, eciVelocity = satTle.propagate(currentTime.year, currentTime.month, currentTime.day, currentTime.hour, currentTime.minute, currentTime.second)
+	epoch = start_time
+	for i in range(0, number_of_positions):
+		current_time = start_time + timedelta(seconds=time_step)
+		eci_position, eci_velocity = satTle.propagate(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second)
 	
-		output.append(timeStep)
-		output.append(eciPosition[0] * 1000)  # converts km's to m's are stores them in array
-		output.append(eciPosition[1] * 1000)
-		output.append(eciPosition[2] * 1000)
-		timeStep += TIME_STEP
+		output.append(time_step)
+		output.append(eci_position[0] * 1000)  # converts km's to m's
+		output.append(eci_position[1] * 1000)
+		output.append(eci_position[2] * 1000)
+		time_step += TIME_STEP
 	
 	return output
 	
@@ -248,8 +230,7 @@ def get_satellite_orbit(raw_tle, sim_start_time, sim_end_time, czml_file_name):
 	sat_name = raw_tle[0]
 	tle_sgp4 = twoline2rv(raw_tle[1], raw_tle[2], wgs72)
 
-	sat = Satellite(raw_tle, tle_sgp4, DEFAULT_RGBA)
-
+	sat = Satellite(raw_tle, tle_sgp4, DEFAUlead_times_RGBA)
 	doc = create_czml_file(sim_start_time, sim_end_time)
 	
 	if DEBUGGING:
@@ -277,34 +258,26 @@ def read_tles(tle_file_name, rgbs):
 			tle_object = twoline2rv(raw_tle[1], raw_tle[2], wgs72)
 			sats.append(Satellite(raw_tle, tle_object, rgbs.get_next_color()))
 			raw_tle = []
-		
 		i+=1
 	
 	return sats		
 
 
-def get_latest_epoch(sats):
-	latest = sats[0] 
-	for sat in sats:
-		if sat.tle_epoch > latest.tle_epoch:
-			latest = sat
-	return latest.tle_epoch
+def create_czml(inputfile_path, outputfile_path=None, start_time=None, end_time=None):
+	"""
+	Takes in a file of TLE's and returns a CZML file visualising their orbits.
+	"""	
 
-def get_earliest_epoch(sats):
-	earliest = sats[0] 
-	for sat in sats:
-		if sat.tle_epoch < earliest.tle_epoch:
-			earliest = sat
-	return earliest.tle_epoch
-
-def create_czml(inputfile_path, outputfile_path=None):
 	rgbs = Colors()
 	satellite_array = read_tles(inputfile_path, rgbs)
 	
-	sim_start_time = get_earliest_epoch(satellite_array)
-	sim_end_time = get_latest_epoch(satellite_array)
+	if not start_time:
+		start_time = datetime.utcnow().replace(tzinfo=pytz.UTC)
 
-	doc = create_czml_file(sim_start_time, sim_end_time)
+	if not end_time:
+		end_time = start_time + timedelta(hours=24)
+
+	doc = create_czml_file(start_time, end_time)
 
 	for sat in satellite_array:
 		sat_name = sat.sat_name
@@ -317,8 +290,7 @@ def create_czml(inputfile_path, outputfile_path=None):
 		print('Orbit time in Minutes: ', orbit_time_in_minutes)	
 		print()
 		
-		# version of method deprecated
-		sat_packet = create_satellite_packet(sat.sat_name, sat.tle_object, sat.orbital_time_in_minutes, sim_start_time, sim_end_time, sat.rgba)
+		sat_packet = create_satellite_packet(sat.sat_name, sat.tle_object, sat.orbital_time_in_minutes, start_time, end_time, sat.rgba)
 
 		doc.packets.append(sat_packet)
 

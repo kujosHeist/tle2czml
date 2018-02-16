@@ -12,3 +12,4 @@ env/
 /*.egg-info
 
 tle.txt
+test_script.py
