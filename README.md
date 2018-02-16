@@ -44,15 +44,15 @@ FLOCK 2E'-3
 ```python
 import tle2czml
 
-# This creates a file in the current directory called "orbit.czml", containing the orbits of the satelites over the next 24 hours.
+# Creates a file in the current directory called "orbit.czml", containing the orbits of the satelites over the next 24 hours.
 tle2czml.create_czml("tle.txt")
 
-# You can also specify the time range you would like to visualise
+# You can specify the time range you would like to visualise
 start_time = datetime(2018, 2, 1, 17, 30)
 end_time = datetime(2018, 2, 1, 19, 30)
 tle2czml.create_czml(input_file, start_time=start_time, end_time=end_time)
 
-# You can specify a different output path
+# You can also specify a different output path
 tle2czml.create_czml(input_file, outputfile_path="path/to/orbit.czml")
 ```
 
