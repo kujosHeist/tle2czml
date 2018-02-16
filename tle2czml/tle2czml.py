@@ -78,7 +78,7 @@ def create_czml_file(start_time, end_time):
 	print(interval)
 	print(start_time.isoformat())			
 
-	packet.clock = {"interval": interval, "currentTime": start_time.isoformat(), "multiplier": MULTIPLIER, "range": "LOOP_STOP", "step": MULTIPLIER}
+	packet.clock = {"interval": interval, "currentTime": start_time.isoformat(), "multiplier": MULTIPLIER, "range": "LOOP_STOP", "step": "SYSTEM_CLOCK_MULTIPLIER"}
 	doc.packets.append(packet)
 	return doc
 	
@@ -295,5 +295,5 @@ def create_czml(inputfile_path, outputfile_path=None, start_time=None, end_time=
 		doc.packets.append(sat_packet)
 
 	if not outputfile_path:
-		outputfile_path = "out.czml"
+		outputfile_path = "orbit.czml"
 	doc.write(outputfile_path)
