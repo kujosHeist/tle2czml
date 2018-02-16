@@ -1,6 +1,9 @@
 # tle2czml
 
-Python package which takes a file of Two Line Element's (TLE's) and returns a czml file visualising their orbits.
+Python package which takes a file of Two Line Element's (TLE's) and returns a czml file visualising their orbits.  
+CZML is a JSON format for describing a time-dynamic graphical scene, primarily for display in a web browser running <a href="https://cesiumjs.org/">Cesium</a>.  
+A <a href="https://www.celestrak.com/NORAD/documentation/tle-fmt.asp">TLE</a> is a data format encoding a list of orbital elements of an Earth-orbiting object for a given point in time.   
+This package uses <a href="https://pypi.python.org/pypi/sgp4/">sgp4.py</a> to predict the satellites fututure postion, and a slightly modified <a href="https://github.com/cleder/czml">czml.py</a> to create the .czml files.  
 
 ![alt text](screenshot.png)
 
