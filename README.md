@@ -44,7 +44,7 @@ import tle2czml
 # This creates a file in the current directory called "orbit.czml", containing the orbits of the satelites over the next 24 hours.
 tle2czml.create_czml("tle.txt")
 
-# You can also specify the time range you would like to visualise the orbits
+# You can also specify the time range you would like to visualise
 start_time = datetime(2018, 2, 1, 17, 30)
 end_time = datetime(2018, 2, 1, 19, 30)
 tle2czml.create_czml(input_file, start_time=start_time, end_time=end_time)
@@ -62,6 +62,5 @@ You can find up to date TLE's for most satellites on `https://www.celestrak.com/
 ## To Do
 * Add command line script
 * Allow users to login with space-track.org
-* Add tests
 * Add ability to select base64 image to use for satellite
 * Add ability to generate html file with cesium globle showing czml file
