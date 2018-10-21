@@ -31,8 +31,12 @@ try:
 except ImportError:
     import json
 
-from datetime import datetime, date
+from datetime import date, datetime
+
 import dateutil.parser
+from pygeoif import geometry
+from pygeoif.geometry import as_shape as asShape
+from pytz import utc
 
 try:
     long
@@ -49,9 +53,7 @@ except NameError:
 # XXX Import the geometries from shapely if it is installed
 # or otherwise from Pygeoif
 
-from pygeoif import geometry
 
-from pygeoif.geometry import as_shape as asShape
 
 
 def grouper(iterable, n, fillvalue=None):
@@ -91,7 +93,6 @@ def class_property(cls, name, doc=None):
 
     return property(getter, setter, doc=doc)
 
-from pytz import utc
 
 def datetime_property(name, allow_offset=False, doc=None):
     """Generates a datetime property that handles strings and timezones.
@@ -134,6 +135,9 @@ position_property = lambda x: class_property(Position, x)
 class _CZMLBaseObject(object):
     _properties = ()
 
+    def __str__(self):
+        return json.dumps(list(self.data()))
+
     def __init__(self, **kwargs):
         """Default init functionality is to load kwargs
         """
@@ -142,10 +146,6 @@ class _CZMLBaseObject(object):
     @property
     def properties(self):
         return self._properties
-
-    def write(self, filename):
-        with open(filename, 'w') as outfile:
-            json.dump(list(self.data()), outfile)
 
     def dumps(self):
         d = self.data()
@@ -1666,5 +1666,3 @@ class CZMLPacket(_CZMLBaseObject):
             property_value = data.get(property_name, None)
             if property_value is not None:
                 setattr(self, property_name, property_value)
-
-
