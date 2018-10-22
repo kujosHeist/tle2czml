@@ -260,7 +260,8 @@ def get_satellite_orbit(raw_tle, sim_start_time, sim_end_time, czml_file_name):
     sat_packet = create_satellite_packet(
         sat.sat_name, sat.tle_object, sat.orbital_time_in_minutes, sim_start_time, sim_end_time, sat.rgba)
     doc.packets.append(sat_packet)
-    doc.write(czml_file_name)
+    with open(czml_file_name, 'w') as f:
+        f.write(str(doc))
 
 
 def read_tles(tles: str, rgbs):

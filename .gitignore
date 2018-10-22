@@ -14,3 +14,4 @@ env/
 tle.txt
 test_script.py
 .pypirc
+build/
