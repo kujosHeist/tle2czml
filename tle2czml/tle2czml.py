@@ -90,7 +90,7 @@ def create_satellite_packet(sat_id, tle, orbit_time_in_minutes, sim_start_time, 
 	packet.description = Description("{} {}".format(DESCRIPTION_TEMPLATE, sat_id))
 	packet.billboard = create_bill_board()
 	packet.label = create_label(sat_id, rgba)
-	packet.path = create_path(availability, orbit_time_in_minutes, rgba)
+	packet.path = create_path(availability, orbit_time_in_minutes, rgba, sim_start_time, sim_end_time)
 	packet.position = create_position(sim_start_time, sim_end_time, tle)  
 	return packet	
 
@@ -113,7 +113,7 @@ def create_label(sat_id, rgba):
 	return lab
 	
 	
-def create_path(total_path_interval, orbit_time_in_minutes, rgba):
+def create_path(total_path_interval, orbit_time_in_minutes, rgba, sim_start_time, sim_end_time):
 	p = Path()
 	
 	p.show = [{"interval": total_path_interval, "boolean": True}]
@@ -123,9 +123,11 @@ def create_path(total_path_interval, orbit_time_in_minutes, rgba):
 
 	start_epoch_str = total_path_interval.split("/")[0]
 	end_epoch_str = total_path_interval.split("/")[1]
+
+	MINUTES_IN_SIM = int((sim_end_time - sim_start_time).total_seconds()/60)
 	
-	left_over_minutes = MINUTES_IN_DAY % orbit_time_in_minutes 
-	number_of_full_orbits = math.floor(MINUTES_IN_DAY/orbit_time_in_minutes)
+	left_over_minutes = MINUTES_IN_SIM % orbit_time_in_minutes 
+	number_of_full_orbits = math.floor(MINUTES_IN_SIM/orbit_time_in_minutes)
 	
 	sub_path_interval_start = parser.parse(start_epoch_str)
 	# first interval roughly half an orbit, rest of the path intervals are full orbits
