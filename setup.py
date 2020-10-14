@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='tle2czml',
-      version='0.1',
+      version='0.2',
       description='Convert TLE\'s to CZML file',
       url='https://github.com/kujosHeist/tle2czml',
       author='Shane Carty',

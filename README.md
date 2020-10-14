@@ -21,20 +21,20 @@ This package uses <a href="https://pypi.python.org/pypi/sgp4/">sgp4.py</a> to pr
 
 ```
 ISS (ZARYA)             
-1 25544U 98067A   18046.55817189  .00001353  00000-0  27714-4 0  9990
-2 25544  51.6417 265.0608 0003589 103.0964 344.3049 15.54096060 99608
-TIANGONG 1              
-1 37820U 11053A   18046.58112813  .00094150  12300-4  13743-3 0  9998
-2 37820  42.7514 126.9107 0017316  32.3682  67.8761 16.04338150366699
-AGGIESAT 4              
-1 41313U 98067HP  18046.57341670  .00209614  31071-4  29378-3 0  9994
-2 41313  51.6292 173.0661 0005230 335.8780  24.1986 16.05344224117524
-FLOCK 2E'-1             
-1 41479U 98067HZ  18046.59084296  .00067088  00000-0  22534-3 0  9995
-2 41479  51.6287 200.4285 0001834 261.2577  98.8221 15.89445123100275
-FLOCK 2E'-3             
-1 41480U 98067JA  18046.62549195  .00058065  00000-0  22549-3 0  9996
-2 41480  51.6222 201.3651 0000797 288.7159  71.3758 15.86570970100255
+1 25544U 98067A   20031.24963938  .00001307  00000-0  31791-4 0  9996
+2 25544  51.6454 310.9655 0005435 211.0342 248.3831 15.49121879210634
+NSIGHT                  
+1 42726U 98067MF  20030.23762086  .00066982  00000-0  26471-3 0  9994
+2 42726  51.6289 225.2148 0002096 295.3393  64.7394 15.86153189153413
+KESTREL EYE IIM (KE2M)  
+1 42982U 98067NE  20030.08703972  .00009357  00000-0  92741-4 0  9997
+2 42982  51.6350 271.0640 0002884 271.0425  89.0241 15.66608286129206
+ASTERIA                 
+1 43020U 98067NH  20030.29800372  .00049876  00000-0  20399-3 0  9995
+2 43020  51.6389 237.2881 0001998 250.9363 109.1425 15.85563292125443
+DELLINGR (RBLE)         
+1 43021U 98067NJ  20030.38822124  .00010528  00000-0  10150-3 0  9991
+2 43021  51.6359 268.6360 0001491 215.4152 144.6746 15.67139053125030
 ```
 
 ## Install
@@ -46,14 +46,23 @@ import tle2czml
 
 # Creates a file in the current directory called "orbit.czml", containing the orbits of the satelites over the next 24 hours.
 tle2czml.create_czml("tle.txt")
+```
+
+```python
+import tle2czml
+from datetime import datetime
 
 # You can specify the time range you would like to visualise
-start_time = datetime(2018, 2, 1, 17, 30)
-end_time = datetime(2018, 2, 1, 19, 30)
-tle2czml.create_czml(input_file, start_time=start_time, end_time=end_time)
+start_time = datetime(2019, 2, 1, 17, 30)
+end_time = datetime(2019, 2, 2, 19, 30)
+tle2czml.create_czml("tle.txt", start_time=start_time, end_time=end_time)
+```
+
+```python
+import tle2czml
 
 # You can also specify a different output path
-tle2czml.create_czml(input_file, outputfile_path="path/to/orbit.czml")
+tle2czml.create_czml("tle.txt", outputfile_path="other_orbit_file.czml")
 ```
 
 ## View Orbits

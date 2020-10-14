@@ -86,16 +86,15 @@ def create_czml_file(start_time, end_time):
 
 
 def create_satellite_packet(sat_id, tle, orbit_time_in_minutes, sim_start_time, sim_end_time, rgba):
-    availability = get_interval(sim_start_time, sim_end_time)
-    packet = CZMLPacket(id='Satellite/{}'.format(sat_id))
-    packet.availability = availability
-    packet.description = Description(
-        "{} {}".format(DESCRIPTION_TEMPLATE, sat_id))
-    packet.billboard = create_bill_board()
-    packet.label = create_label(sat_id, rgba)
-    packet.path = create_path(availability, orbit_time_in_minutes, rgba)
-    packet.position = create_position(sim_start_time, sim_end_time, tle)
-    return packet
+	availability = get_interval(sim_start_time, sim_end_time)
+	packet = CZMLPacket(id='Satellite/{}'.format(sat_id))
+	packet.availability = availability
+	packet.description = Description("{} {}".format(DESCRIPTION_TEMPLATE, sat_id))
+	packet.billboard = create_bill_board()
+	packet.label = create_label(sat_id, rgba)
+	packet.path = create_path(availability, orbit_time_in_minutes, rgba, sim_start_time, sim_end_time)
+	packet.position = create_position(sim_start_time, sim_end_time, tle)  
+	return packet	
 
 
 def create_bill_board():
@@ -105,104 +104,97 @@ def create_bill_board():
 
 
 def create_label(sat_id, rgba):
-    lab = Label(text=sat_id, show=True)
-    lab.fillColor = {"rgba": rgba}
-    lab.font = LABEL_FONT
-    lab.horizontalOrigin = "LEFT"
-    lab.outlineColor = {"rgba": [0, 0, 0, 255]}
-    lab.outlineWidth = 2
-    lab.pixelOffset = {"cartesian2": [12, 0]}
-    lab.style = 'FILL_AND_OUTLINE'
-    lab.verticalOrigin = 'CENTER'
-    return lab
+	lab = Label(text=sat_id, show=True)
+	lab.fillColor = {"rgba": rgba}
+	lab.font = LABEL_FONT
+	lab.horizontalOrigin = "LEFT"
+	lab.outlineColor = {"rgba": [0,0,0,255]}
+	lab.outlineWidth = 2	 
+	lab.pixelOffset = {"cartesian2": [12,0]} 
+	lab.style = 'FILL_AND_OUTLINE'
+	lab.verticalOrigin = 'CENTER'
+	return lab
+	
+	
+def create_path(total_path_interval, orbit_time_in_minutes, rgba, sim_start_time, sim_end_time):
+	p = Path()
+	
+	p.show = [{"interval": total_path_interval, "boolean": True}]
+	p.width = 1
+	p.material = {"solidColor": {"color": {"rgba": rgba}}}
+	p.resolution = 120
 
+	start_epoch_str = total_path_interval.split("/")[0]
+	end_epoch_str = total_path_interval.split("/")[1]
 
-def create_path(total_path_interval, orbit_time_in_minutes, rgba):
-    p = Path()
+	MINUTES_IN_SIM = int((sim_end_time - sim_start_time).total_seconds()/60)
+	
+	left_over_minutes = MINUTES_IN_SIM % orbit_time_in_minutes 
+	number_of_full_orbits = math.floor(MINUTES_IN_SIM/orbit_time_in_minutes)
+	
+	sub_path_interval_start = parser.parse(start_epoch_str)
+	# first interval roughly half an orbit, rest of the path intervals are full orbits
+	sub_path_interval_end = sub_path_interval_start + timedelta(minutes=left_over_minutes)    
+	sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()
 
-    p.show = [{"interval": total_path_interval, "boolean": True}]
-    p.width = 1
-    p.material = {"solidColor": {"color": {"rgba": rgba}}}
-    p.resolution = 120
+	orbital_time_in_seconds = (orbit_time_in_minutes * 60.0)
+	
+	if DEBUGGING:
+		print('Total Path Interval: ' + total_path_interval)   # goes from tle epoch to 12/24 hours in future
+	
+	lead_times = []
+	
+	end_epoch = parser.parse(end_epoch_str)
+	
+	for i in range(0, number_of_full_orbits + 1):
+		lead_times.append({
+				  "interval": sub_path_interval_str,
+				  "epoch": sub_path_interval_start.isoformat(),
+				  "number": [
+					0, orbital_time_in_seconds,
+					orbital_time_in_seconds, 0
+				  ]
+				})
+			
+		if DEBUGGING:
+			print('Sub interval string: ' + sub_path_interval_str)
+			
+		sub_path_interval_start = sub_path_interval_end
+		sub_path_interval_end = sub_path_interval_start + timedelta(minutes=orbit_time_in_minutes)
+		sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()
+	
+	if DEBUGGING:
+		print()
+	
+	sub_path_interval_start = parser.parse(start_epoch_str)
+	# first interval roughly half an orbit, rest of the path intervals are full orbits
+	sub_path_interval_end = sub_path_interval_start + timedelta(minutes = left_over_minutes)  
+	sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()	
+	
+	trail_times = []
+	
+	for i in range(0, number_of_full_orbits + 1):
+		trail_times.append({
+				  "interval": sub_path_interval_str,
+				  "epoch": sub_path_interval_start.isoformat(),
+				  "number":[
+					0, 0,
+					orbital_time_in_seconds, orbital_time_in_seconds
+				  ]
+				})	
 
-    start_epoch_str = total_path_interval.split("/")[0]
-    end_epoch_str = total_path_interval.split("/")[1]
+		if DEBUGGING:
+			print('Sub interval string: ' + sub_path_interval_str)			
 
-    left_over_minutes = MINUTES_IN_DAY % orbit_time_in_minutes
-    number_of_full_orbits = math.floor(MINUTES_IN_DAY/orbit_time_in_minutes)
+		sub_path_interval_start = sub_path_interval_end
+		sub_path_interval_end = sub_path_interval_start + timedelta(minutes=orbit_time_in_minutes)
+		
+		sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + sub_path_interval_end.isoformat()	
 
-    sub_path_interval_start = parser.parse(start_epoch_str)
-    # first interval roughly half an orbit, rest of the path intervals are full orbits
-    sub_path_interval_end = sub_path_interval_start + \
-        timedelta(minutes=left_over_minutes)
-    sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + \
-        sub_path_interval_end.isoformat()
-
-    orbital_time_in_seconds = (orbit_time_in_minutes * 60.0)
-
-    if DEBUGGING:
-        # goes from tle epoch to 12/24 hours in future
-        print('Total Path Interval: ' + total_path_interval)
-
-    lead_times = []
-
-    end_epoch = parser.parse(end_epoch_str)
-
-    for i in range(0, number_of_full_orbits + 1):
-        lead_times.append({
-                          "interval": sub_path_interval_str,
-                          "epoch": sub_path_interval_start.isoformat(),
-                          "number": [
-                              0, orbital_time_in_seconds,
-                              orbital_time_in_seconds, 0
-                          ]
-                          })
-
-        if DEBUGGING:
-            print('Sub interval string: ' + sub_path_interval_str)
-
-        sub_path_interval_start = sub_path_interval_end
-        sub_path_interval_end = sub_path_interval_start + \
-            timedelta(minutes=orbit_time_in_minutes)
-        sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + \
-            sub_path_interval_end.isoformat()
-
-    if DEBUGGING:
-        print()
-
-    sub_path_interval_start = parser.parse(start_epoch_str)
-    # first interval roughly half an orbit, rest of the path intervals are full orbits
-    sub_path_interval_end = sub_path_interval_start + \
-        timedelta(minutes=left_over_minutes)
-    sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + \
-        sub_path_interval_end.isoformat()
-
-    trail_times = []
-
-    for i in range(0, number_of_full_orbits + 1):
-        trail_times.append({
-            "interval": sub_path_interval_str,
-            "epoch": sub_path_interval_start.isoformat(),
-            "number": [
-                0, 0,
-                orbital_time_in_seconds, orbital_time_in_seconds
-            ]
-        })
-
-        if DEBUGGING:
-            print('Sub interval string: ' + sub_path_interval_str)
-
-        sub_path_interval_start = sub_path_interval_end
-        sub_path_interval_end = sub_path_interval_start + \
-            timedelta(minutes=orbit_time_in_minutes)
-
-        sub_path_interval_str = sub_path_interval_start.isoformat() + '/' + \
-            sub_path_interval_end.isoformat()
-
-    p.leadTime = lead_times
-    p.trailTime = trail_times
-
-    return p
+	p.leadTime = lead_times
+	p.trailTime = trail_times	
+	
+	return p
 
 
 def create_position(start_time, end_time, tle):
