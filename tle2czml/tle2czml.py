@@ -252,16 +252,16 @@ def get_satellite_orbit(raw_tle, sim_start_time, sim_end_time, czml_file_name):
     sat_packet = create_satellite_packet(
         sat.sat_name, sat.tle_object, sat.orbital_time_in_minutes, sim_start_time, sim_end_time, sat.rgba)
     doc.packets.append(sat_packet)
-    doc.write(czml_file_name)
+    with open(czml_file_name, 'w') as f:
+        f.write(str(doc))
 
 
-def read_tles(tle_file_name, rgbs):
-    tle_src = open(tle_file_name, 'r')
+def read_tles(tles: str, rgbs):
     raw_tle = []
     sats = []
 
     i = 1
-    for line in tle_src:
+    for line in tles.splitlines():
         raw_tle.append(line)
 
         if i % 3 == 0:
@@ -273,13 +273,12 @@ def read_tles(tle_file_name, rgbs):
     return sats
 
 
-def create_czml(inputfile_path, outputfile_path=None, start_time=None, end_time=None):
+def tles_to_czml(tles, start_time=None, end_time=None, silent=False):
     """
-    Takes in a file of TLE's and returns a CZML file visualising their orbits.
+    Converts the contents of a TLE file to CZML and returns the JSON as a string
     """
-
     rgbs = Colors()
-    satellite_array = read_tles(inputfile_path, rgbs)
+    satellite_array = read_tles(tles, rgbs)
 
     if not start_time:
         start_time = datetime.utcnow().replace(tzinfo=pytz.UTC)
@@ -294,18 +293,29 @@ def create_czml(inputfile_path, outputfile_path=None, start_time=None, end_time=
         orbit_time_in_minutes = sat.orbital_time_in_minutes
         tle_epoch = sat.tle_epoch
 
-        print()
-        print('Satellite Name: ', sat_name)
-        print('TLE Epoch: ', tle_epoch)
-        print('Orbit time in Minutes: ', orbit_time_in_minutes)
-        print('New thang')
-        print()
+        if not silent:
+            print()
+            print('Satellite Name: ', sat_name)
+            print('TLE Epoch: ', tle_epoch)
+            print('Orbit time in Minutes: ', orbit_time_in_minutes)
+            print()
 
         sat_packet = create_satellite_packet(
             sat.sat_name, sat.tle_object, sat.orbital_time_in_minutes, start_time, end_time, sat.rgba)
 
         doc.packets.append(sat_packet)
 
-    if not outputfile_path:
-        outputfile_path = "orbit.czml"
-    doc.write(outputfile_path)
+    return str(doc)
+
+
+def create_czml(inputfile_path, outputfile_path=None, start_time=None, end_time=None):
+    """
+    Takes in a file of TLE's and returns a CZML file visualising their orbits.
+    """
+    with open(inputfile_path, 'r') as tle_src:
+        doc = tles_to_czml(
+            tle_src.read(), start_time=start_time, end_time=end_time)
+        if not outputfile_path:
+            outputfile_path = "orbit.czml"
+        with open(outputfile_path, 'w') as f:
+            f.write(str(doc))

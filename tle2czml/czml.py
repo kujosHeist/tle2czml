@@ -135,6 +135,9 @@ position_property = lambda x: class_property(Position, x)
 class _CZMLBaseObject(object):
     _properties = ()
 
+    def __str__(self):
+        return json.dumps(list(self.data()))
+
     def __init__(self, **kwargs):
         """Default init functionality is to load kwargs
         """
@@ -143,10 +146,6 @@ class _CZMLBaseObject(object):
     @property
     def properties(self):
         return self._properties
-
-    def write(self, filename):
-        with open(filename, 'w') as outfile:
-            json.dump(list(self.data()), outfile)
 
     def dumps(self):
         d = self.data()
