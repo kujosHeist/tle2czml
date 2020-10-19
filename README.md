@@ -21,20 +21,20 @@ This package uses <a href="https://pypi.python.org/pypi/sgp4/">sgp4.py</a> to pr
 
 ```
 ISS (ZARYA)             
-1 25544U 98067A   20031.24963938  .00001307  00000-0  31791-4 0  9996
-2 25544  51.6454 310.9655 0005435 211.0342 248.3831 15.49121879210634
-NSIGHT                  
-1 42726U 98067MF  20030.23762086  .00066982  00000-0  26471-3 0  9994
-2 42726  51.6289 225.2148 0002096 295.3393  64.7394 15.86153189153413
+1 25544U 98067A   20293.22611972  .00000497  00000-0  17003-4 0  9991
+2 25544  51.6436  94.7185 0001350  46.8729 126.5595 15.49312821251249
 KESTREL EYE IIM (KE2M)  
-1 42982U 98067NE  20030.08703972  .00009357  00000-0  92741-4 0  9997
-2 42982  51.6350 271.0640 0002884 271.0425  89.0241 15.66608286129206
-ASTERIA                 
-1 43020U 98067NH  20030.29800372  .00049876  00000-0  20399-3 0  9995
-2 43020  51.6389 237.2881 0001998 250.9363 109.1425 15.85563292125443
+1 42982U 98067NE  20293.11355452  .00022129  00000-0  15728-3 0  9999
+2 42982  51.6336   8.5058 0001619 215.9884 144.1006 15.73808685170523
 DELLINGR (RBLE)         
-1 43021U 98067NJ  20030.38822124  .00010528  00000-0  10150-3 0  9991
-2 43021  51.6359 268.6360 0001491 215.4152 144.6746 15.67139053125030
+1 43021U 98067NJ  20292.66572402  .00020201  00000-0  13900-3 0  9998
+2 43021  51.6343   8.5926 0000331  53.4398 306.6632 15.74631224166254
+UBAKUSAT
+1 43467U 98067NQ  20293.19063114  .00070844  00000-0  29473-3 0  9996
+2 43467  51.6335   1.3662 0002867   6.9343 353.1700 15.85064344139669
+CUBERRT
+1 43546U 98067NU  20292.65915576  .00130902  00000-0  58528-3 0  9997
+2 43546  51.6326   6.1225 0002465  18.8688 341.2406 15.83306046129681
 ```
 
 ## Install
@@ -53,8 +53,8 @@ import tle2czml
 from datetime import datetime
 
 # You can specify the time range you would like to visualise
-start_time = datetime(2019, 2, 1, 17, 30)
-end_time = datetime(2019, 2, 2, 19, 30)
+start_time = datetime(2020, 10, 1, 17, 30)
+end_time = datetime(2020, 10, 2, 19, 30)
 tle2czml.create_czml("tle.txt", start_time=start_time, end_time=end_time)
 ```
 
@@ -66,10 +66,10 @@ tle2czml.create_czml("tle.txt", outputfile_path="other_orbit_file.czml")
 ```
 
 ## View Orbits
-To view the orbits, go to `https://cesiumjs.org/Cesium/Build/Apps/CesiumViewer/`, and drag the .czml file into the browser.
+To view the orbits, go to https://cesiumjs.org/Cesium/Build/Apps/CesiumViewer/ and drag the .czml file into the browser.
 (Click the "Play" button in the bottom left corner to start the visualisation)  
 
-You can find up to date TLE's for most satellites on `https://www.celestrak.com/NORAD/elements/`  
+You can find up to date TLE's for most satellites on https://www.celestrak.com/NORAD/elements/
 
 ## To Do
 * Add command line script
