@@ -1,3 +1,5 @@
+''' script to be used by setuptools to build package '''
+
 from setuptools import setup
 
 setup(name='tle2czml',
@@ -9,20 +11,12 @@ setup(name='tle2czml',
       license='MIT',
       packages=['tle2czml'],
       install_requires=[
-      	'pygeoif==0.7',
-		'python-dateutil==2.6.1',
-		'pytz==2018.3',
-		'sgp4==1.4',
-		'six==1.11.0',
-		'wheel==0.24.0',      	
+          'pygeoif==0.7',
+          'python-dateutil==2.6.1',
+          'pytz==2018.3',
+          'sgp4==1.4',
+          'six==1.11.0',
+          'wheel==0.24.0',
       ],
       include_package_data=True,
       zip_safe=False)
-
-
-
-
-
-
-
-
