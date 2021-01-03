@@ -300,12 +300,15 @@ def read_tles(tles: str, rgbs):
     return sats
 
 
-def tles_to_czml(tles, start_time=None, end_time=None, silent=False):
+def tles_to_czml(tles, start_time=None, end_time=None, silent=False, descriptions=None):
     """
     Converts the contents of a TLE file to CZML and returns the JSON as a string
     """
     rgbs = Colors()
     satellite_array = read_tles(tles, rgbs)
+    
+    if descriptions is not None and len(descriptions) != len(satellite_array):
+        raise Exception("Number of descriptions is not None and doesn't match number of TLEs")
 
     if not start_time:
         start_time = datetime.utcnow().replace(tzinfo=pytz.UTC)
@@ -315,7 +318,7 @@ def tles_to_czml(tles, start_time=None, end_time=None, silent=False):
 
     doc = create_czml_file(start_time, end_time)
 
-    for sat in satellite_array:
+    for idx, sat in enumerate(satellite_array):
         sat_name = sat.sat_name
         orbit_time_in_minutes = sat.orbital_time_in_minutes
         tle_epoch = sat.tle_epoch
@@ -328,6 +331,9 @@ def tles_to_czml(tles, start_time=None, end_time=None, silent=False):
             print()
 
         sat_packet = create_satellite_packet(sat, start_time, end_time)
+        
+        if descriptions is not None and descriptions[idx] is not None:
+            sat_packet.description = Description(descriptions[idx])
 
         doc.packets.append(sat_packet)
 
