@@ -65,6 +65,28 @@ import tle2czml
 tle2czml.create_czml("tle.txt", outputfile_path="other_orbit_file.czml")
 ```
 
+## Modify czml parameters
+Solve the third problem.You can select base64 image to use for satellite,The parameters include BILLBOARD_SCALE LABEL_FONT SATELITE_IMAGE_URI MULTIPLIER DESCRIPTION_TEMPLATE MINUTES_IN_DAY TIME_STEP DEFAULT_RGBA DEBUGGING.
+A better improvement solution is to rewrite tle2czml as a class.Using BILLBOARD_SCALE LABEL_FONT SATELITE_IMAGE_URI MULTIPLIER DESCRIPTION_TEMPLATE MINUTES_IN_DAY TIME_STEP DEFAULT_RGBA DEBUGGING as parameters to the class.
+  
+```python
+import json
+from tle2czml import *
+
+# MULTIPLIER affects the velocity of the orbit in Cesium，SATELITE_ IMAGE_ URI affects satellite in Cesium
+tles = '''BEIDOU 2     
+1 31115U 07011A   21323.16884980 -.00000043  00000-0  00000-0 0  9993
+2 31115  51.9034 274.7604 0003928 314.2233  45.7206  1.77349177 46511
+BEIDOU 3
+1 36287U 10001A   21323.54986160 -.00000268  00000-0  00000-0 0  9995
+2 36287   1.7347  43.1625 0001966  74.6398 279.3247  1.00266671 43404'''
+tle2czml.MULTIPLIER = 1
+czml = tle2czml.tles_to_czml(tles, silent=True)
+# print('data', type(data))
+print(json.loads(czml)[0]['clock']['multiplier'])
+```
+
+
 ## View Orbits
 To view the orbits, go to https://cesiumjs.org/Cesium/Build/Apps/CesiumViewer/ and drag the .czml file into the browser.
 (Click the "Play" button in the bottom left corner to start the visualisation)  
