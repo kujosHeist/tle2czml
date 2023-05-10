@@ -1,23 +1,26 @@
 # tle2czml
 
+Python package which takes in Two Line Element's (TLE's) and returns a czml file visualising their orbits.
 
-Python package which takes in Two Line Element's (TLE's) and returns a czml file visualising their orbits.  
-  
 <a href="https://pypi.python.org/pypi/tle2czml">https://pypi.python.org/pypi/tle2czml</a>
 
+## Background
 
-## Background  
-CZML is a JSON format for describing a time-dynamic graphical scene, primarily for display in a web browser running <a href="https://cesiumjs.org/">Cesium</a>.  
-A <a href="https://www.celestrak.com/NORAD/documentation/tle-fmt.asp">TLE</a> is a data format encoding a list of orbital elements of an Earth-orbiting object for a given point in time.  
+CZML is a JSON format for describing a time-dynamic graphical scene, primarily for display in a web browser
+running <a href="https://cesiumjs.org/">Cesium</a>.  
+A <a href="https://www.celestrak.com/NORAD/documentation/tle-fmt.asp">TLE</a> is a data format encoding a list of
+orbital elements of an Earth-orbiting object for a given point in time.
 
-This package uses <a href="https://pypi.python.org/pypi/sgp4/">sgp4.py</a> to predict the satellites fututure postion, and a slightly modified <a href="https://github.com/cleder/czml">czml.py</a> to create the .czml files.  
+This package uses <a href="https://pypi.python.org/pypi/sgp4/">sgp4.py</a> to predict the satellites fututure postion,
+and a slightly modified <a href="https://github.com/cleder/czml">czml.py</a> to create the .czml files.
 
 ![alt text](screenshot.png)
 
 ## Requirements
+
 * python3
 * pip
-* Text file containing list of two line elements, example: 
+* Text file containing list of two line elements, example:
 
 ```
 ISS (ZARYA)             
@@ -38,63 +41,70 @@ CUBERRT
 ```
 
 ## Install
+
 `pip install tle2czml`
 
 ## Usage
+
 ```python
-import tle2czml
+from tle2czml.tle2czml import Tle2Czml
 
 # Creates a file in the current directory called "orbit.czml", containing the orbits of the satelites over the next 24 hours.
-tle2czml.create_czml("tle.txt")
+t2c = Tle2Czml()
+t2c.create_czml("tle.txt")
 ```
 
 ```python
-import tle2czml
+from tle2czml.tle2czml import Tle2Czml
 from datetime import datetime
 
 # You can specify the time range you would like to visualise
 start_time = datetime(2020, 10, 1, 17, 30)
 end_time = datetime(2020, 10, 2, 19, 30)
-tle2czml.create_czml("tle.txt", start_time=start_time, end_time=end_time)
+t2c = Tle2Czml()
+t2c.create_czml("tle.txt", start_time=start_time, end_time=end_time)
 ```
 
 ```python
-import tle2czml
+from tle2czml.tle2czml import Tle2Czml
 
 # You can also specify a different output path
-tle2czml.create_czml("tle.txt", outputfile_path="other_orbit_file.czml")
+t2c = Tle2Czml()
+t2c.create_czml("tle.txt", outputfile_path="other_orbit_file.czml")
 ```
 
 ## Modify czml parameters
-Solve the third problem.You can select base64 image to use for satellite,The parameters include BILLBOARD_SCALE LABEL_FONT SATELITE_IMAGE_URI MULTIPLIER DESCRIPTION_TEMPLATE MINUTES_IN_DAY TIME_STEP DEFAULT_RGBA DEBUGGING.
-A better improvement solution is to rewrite tle2czml as a class.Using BILLBOARD_SCALE LABEL_FONT SATELITE_IMAGE_URI MULTIPLIER DESCRIPTION_TEMPLATE MINUTES_IN_DAY TIME_STEP DEFAULT_RGBA DEBUGGING as parameters to the class.
-  
-```python
-import json
-from tle2czml import *
 
-# MULTIPLIER affects the velocity of the orbit in Cesium，SATELITE_ IMAGE_ URI affects satellite in Cesium
-tles = '''BEIDOU 2     
+Solve the third problem.You can select base64 image to use for satellite,The parameters include BILLBOARD_SCALE
+LABEL_FONT SATELITE_IMAGE_URI MULTIPLIER DESCRIPTION_TEMPLATE MINUTES_IN_DAY TIME_STEP DEFAULT_RGBA DEBUGGING. A better
+improvement solution is to rewrite tle2czml as a class.Using BILLBOARD_SCALE LABEL_FONT SATELITE_IMAGE_URI MULTIPLIER
+DESCRIPTION_TEMPLATE MINUTES_IN_DAY TIME_STEP DEFAULT_RGBA DEBUGGING as parameters to the class.
+
+```python
+from tle2czml.tle2czml import Tle2Czml
+
+# multiplier affects the velocity of the orbit in Cesium，SATELLITE_IMAGE_URI affects satellite in Cesium
+tles = '''BEIDOU 2
 1 31115U 07011A   21323.16884980 -.00000043  00000-0  00000-0 0  9993
 2 31115  51.9034 274.7604 0003928 314.2233  45.7206  1.77349177 46511
 BEIDOU 3
 1 36287U 10001A   21323.54986160 -.00000268  00000-0  00000-0 0  9995
 2 36287   1.7347  43.1625 0001966  74.6398 279.3247  1.00266671 43404'''
-tle2czml.MULTIPLIER = 1
-czml = tle2czml.tles_to_czml(tles, silent=True)
-# print('data', type(data))
-print(json.loads(czml)[0]['clock']['multiplier'])
+t2c = Tle2Czml(multiplier=1)
+czml = t2c.tles_to_czml(tles, silent=True)
+print(type(czml), czml)
+print(type(czml.dumps()), czml.dumps())
 ```
 
-
 ## View Orbits
+
 To view the orbits, go to https://cesiumjs.org/Cesium/Build/Apps/CesiumViewer/ and drag the .czml file into the browser.
-(Click the "Play" button in the bottom left corner to start the visualisation)  
+(Click the "Play" button in the bottom left corner to start the visualisation)
 
 You can find up to date TLE's for most satellites on https://www.celestrak.com/NORAD/elements/
 
 ## To Do
+
 * Add command line script
 * Allow users to login with space-track.org
-* Add ability to select base64 image to use for satellite
 * Add ability to generate html file with cesium globle displaying czml file
